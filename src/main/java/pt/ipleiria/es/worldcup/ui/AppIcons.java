@@ -1,5 +1,6 @@
 package pt.ipleiria.es.worldcup.ui;
 
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -12,8 +13,17 @@ import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 final class AppIcons {
+    private static final Map<String, BufferedImage> FLAG_CACHE = new ConcurrentHashMap<>();
+
     private AppIcons() {
     }
 
@@ -30,7 +40,7 @@ final class AppIcons {
     }
 
     static Icon argentinaFlag() {
-        return new ArgentinaFlagIcon(32, 24);
+        return teamFlag("ARG");
     }
 
     static Icon teamFlag(String code) {
@@ -150,7 +160,13 @@ final class AppIcons {
             Graphics2D g2 = prepare(g);
             ShapePainter.round(g2, x, y, width, height, 10, Color.WHITE);
             g2.setClip(new RoundRectangle2D.Double(x, y, width, height, 10, 10));
-            paintFlag(g2, x, y);
+            BufferedImage image = flagImage(code);
+            if (image == null) {
+                paintFlag(g2, x, y);
+            } else {
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g2.drawImage(image, x, y, width, height, null);
+            }
             g2.setClip(null);
             g2.setColor(new Color(0, 0, 0, 35));
             g2.drawRoundRect(x, y, width - 1, height - 1, 10, 10);
@@ -652,6 +668,28 @@ final class AppIcons {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         return g2;
+    }
+
+    private static BufferedImage flagImage(String code) {
+        return FLAG_CACHE.computeIfAbsent(code, AppIcons::loadFlagImage);
+    }
+
+    private static BufferedImage loadFlagImage(String code) {
+        String fileName = code + ".png";
+        URL resource = AppIcons.class.getResource("/flags/" + fileName);
+        try {
+            if (resource != null) {
+                return ImageIO.read(resource);
+            }
+
+            Path localFile = Path.of("src", "main", "resources", "flags", fileName);
+            if (Files.exists(localFile)) {
+                return ImageIO.read(localFile.toFile());
+            }
+        } catch (IOException ignored) {
+            // The generated fallback icon keeps the UI usable if an image is unavailable.
+        }
+        return null;
     }
 
     private static final class ShapePainter {

@@ -6,6 +6,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -45,7 +47,7 @@ final class StandingsPanel {
         JPanel header = UiSupport.panel(AppTheme.CHIP, 1, 2, new Insets(0, 0, 2, 0), 14, 0);
         header.add(UiSupport.label(group.name().toUpperCase(), GROUP_TITLE, new Font("Inter", Font.BOLD, 16)), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         header.add(groupFlags(group), UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
-        card.add(header, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        card.add(header, UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         card.add(classificacaoTable(rows), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
         return card;
     }
@@ -126,15 +128,20 @@ final class StandingsPanel {
     }
 
     private void buildUi() {
-        rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(24, 28, 34, 28), 0, 16);
+        rootPanel = new JPanel(new BorderLayout(0, 12));
+        rootPanel.setOpaque(true);
+        rootPanel.setBackground(AppTheme.BACKGROUND);
+        rootPanel.setBorder(BorderFactory.createEmptyBorder(14, 22, 20, 22));
         JPanel title = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 3);
         title.add(UiSupport.label("CLASSIFICACOES", AppTheme.TEXT, AppTheme.TITLE_FONT), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         title.add(UiSupport.label("GRUPOS DO MUNDIAL FIFA 2026", AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        rootPanel.add(title, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        rootPanel.add(title, BorderLayout.NORTH);
         groupsPanel = UiSupport.panel(AppTheme.BACKGROUND, 6, 2, new Insets(0, 0, 0, 0), 10, 12);
         JScrollPane scrollPane = new JScrollPane(groupsPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(22);
         scrollPane.getViewport().setBackground(AppTheme.BACKGROUND);
-        rootPanel.add(scrollPane, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
+        rootPanel.add(scrollPane, BorderLayout.CENTER);
     }
 }

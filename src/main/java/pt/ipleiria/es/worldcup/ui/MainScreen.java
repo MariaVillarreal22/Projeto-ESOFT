@@ -86,7 +86,7 @@ public class MainScreen extends JPanel {
             case CALENDAR -> new CalendarPanel().getRootPanel();
             case STANDINGS -> new StandingsPanel(selectedTeam).getRootPanel();
         };
-        contentPanel.add(viewPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+        contentPanel.add(viewPanel, BorderLayout.CENTER);
         updateActiveButtons();
         contentPanel.revalidate();
         contentPanel.repaint();
@@ -153,15 +153,17 @@ public class MainScreen extends JPanel {
         addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", navButton("Hoteis"), navButton("Locacoes"));
         rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
 
-        mainPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 0);
-        headerPanel = UiSupport.panel(AppTheme.HEADER, 1, 4, new Insets(12, 24, 12, 24), 14, 0);
-        headerPanel.setPreferredSize(new Dimension(900, 72));
+        mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setOpaque(true);
+        mainPanel.setBackground(AppTheme.BACKGROUND);
+        headerPanel = UiSupport.panel(AppTheme.HEADER, 1, 4, new Insets(8, 22, 8, 22), 14, 0);
+        headerPanel.setPreferredSize(new Dimension(900, 60));
         menuButton = new HeaderMenuButton();
         menuButton.setUI(new BasicButtonUI());
         menuButton.setIcon(AppIcons.menu());
         menuButton.setForeground(Color.WHITE);
         menuButton.setBackground(new Color(0x10245A));
-        menuButton.setPreferredSize(new Dimension(62, 58));
+        menuButton.setPreferredSize(new Dimension(54, 44));
         menuButton.setBorder(BorderFactory.createEmptyBorder());
         menuButton.setBorderPainted(false);
         menuButton.setContentAreaFilled(false);
@@ -170,7 +172,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(menuButton, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
 
         JPanel searchPanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 8, 0);
-        searchPanel.setPreferredSize(new Dimension(260, 44));
+        searchPanel.setPreferredSize(new Dimension(260, 40));
         JLabel searchIcon = new JLabel(AppIcons.search());
         searchIcon.setForeground(new Color(0x111827));
         searchPanel.add(searchIcon, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
@@ -180,7 +182,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(searchPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
         JPanel comboPanel = UiSupport.panel(Color.WHITE, 1, 1, new Insets(0, 8, 0, 8), 0, 0);
-        comboPanel.setPreferredSize(new Dimension(240, 44));
+        comboPanel.setPreferredSize(new Dimension(240, 40));
         teamComboBox = new JComboBox<>(WorldCupData.teams());
         teamComboBox.setSelectedItem(selectedTeam);
         teamComboBox.setRenderer(new TeamRenderer());
@@ -190,7 +192,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(comboPanel, UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
         JPanel datePanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 10, 0);
-        datePanel.setPreferredSize(new Dimension(176, 44));
+        datePanel.setPreferredSize(new Dimension(176, 40));
         dateLabel = UiSupport.label("JUNE 2026", new Color(0x111827), AppTheme.BODY_FONT);
         datePanel.add(dateLabel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         JLabel calendar = new JLabel(AppIcons.calendar());
@@ -198,9 +200,11 @@ public class MainScreen extends JPanel {
         datePanel.add(calendar, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
         headerPanel.add(datePanel, UiSupport.constraints(0, 3, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
-        mainPanel.add(headerPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        contentPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 1, new Insets(0, 0, 0, 0), 0, 0);
-        mainPanel.add(contentPanel, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setOpaque(true);
+        contentPanel.setBackground(AppTheme.BACKGROUND);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
         rootPanel.add(mainPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_BOTH));
     }
 
