@@ -1,4 +1,4 @@
-package pt.ipleiria.es.worldcup.ui;
+package pt.ipleiria.es.worldcup;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -128,8 +128,64 @@ public class StadiumsScreen extends JPanel {
 
     // ==================== MENÚ LATERAL ====================
     private JPanel createMenuPanel() {
-        return FifaUiKit.sidebar("Estádios");
+        JPanel menu = new JPanel();
+        menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+        menu.setBackground(new Color(15, 42, 92));
+        menu.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(60, 80, 140)),
+                BorderFactory.createEmptyBorder(20, 15, 20, 15)
+        ));
+        menu.setPreferredSize(new Dimension(200, 0));
+
+        JLabel compTitle = new JLabel("COMPETIÇÕES");
+        compTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        compTitle.setForeground(Color.WHITE);
+        compTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menu.add(compTitle);
+        menu.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        menu.add(createMenuItem("Fases"));
+        menu.add(createMenuItem("Calendário"));
+        menu.add(createMenuItem("Classificações"));
+        menu.add(createMenuItem("Estatísticas"));
+        menu.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JLabel entityTitle = new JLabel("ENTIDADES");
+        entityTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        entityTitle.setForeground(Color.WHITE);
+        entityTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menu.add(entityTitle);
+        menu.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        menu.add(createMenuItem("Equipas"));
+        menu.add(createMenuItem("Árbitros"));
+        menu.add(createMenuItemSelected("Estádios"));
+        menu.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JLabel ticketTitle = new JLabel("BILHETES");
+        ticketTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        ticketTitle.setForeground(Color.WHITE);
+        ticketTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menu.add(ticketTitle);
+        menu.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        menu.add(createMenuItem("Comprar"));
+        menu.add(createMenuItem("Meus Bilhetes"));
+        menu.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JLabel hospTitle = new JLabel("HOSPITALIDADE");
+        hospTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        hospTitle.setForeground(Color.WHITE);
+        hospTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menu.add(hospTitle);
+        menu.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        menu.add(createMenuItem("Hotéis"));
+        menu.add(createMenuItem("Locações"));
+
+        return menu;
     }
+
     private JLabel createMenuItem(String text) {
         JLabel item = new JLabel("  " + text);
         item.setFont(new Font("Segoe UI", Font.PLAIN, 12));
