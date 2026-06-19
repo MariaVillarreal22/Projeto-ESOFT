@@ -55,6 +55,7 @@ public class MainScreen extends JPanel {
         JPanel linksPanel = panel(AppTheme.SIDEBAR, links.length, 1, new Insets(0, 0, 12, 0), 0, 0);
         for (int i = 0; i < links.length; i++) {
             JLabel link = label(links[i], i == activeIndex ? AppTheme.TEXT : AppTheme.MUTED, AppTheme.BODY_FONT);
+            installNavigation(link, links[i], i == activeIndex);
             linksPanel.add(link, constraints(i, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         }
         parent.add(linksPanel, constraints(row + 1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
@@ -82,6 +83,24 @@ public class MainScreen extends JPanel {
     }
 
     private void navigate(String item) {
+        if ("Calendario".equals(item)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    """
+                    <html>
+                      <b>Calendário ilustrativo</b><br><br>
+                      11 JUN 2026 - México vs África do Sul<br>
+                      12 JUN 2026 - Canadá vs Japão<br>
+                      13 JUN 2026 - Brasil vs Marrocos<br>
+                      15 JUN 2026 - Portugal vs Colômbia
+                    </html>
+                    """,
+                    "Calendário",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
         String className = screenClassName(item);
         if (className == null) {
             JOptionPane.showMessageDialog(this, "O ecrã \"" + item + "\" ainda não está implementado.", "Navegação", JOptionPane.INFORMATION_MESSAGE);

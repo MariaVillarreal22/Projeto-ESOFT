@@ -10,6 +10,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 final class FifaUiKit {
     static final int SIDEBAR_WIDTH = 190;
@@ -29,6 +34,9 @@ final class FifaUiKit {
     static final Color GOLD = new Color(0xFFD21E);
     static final Color LINE = new Color(0x2D5593);
     static final Color FIELD_TEXT = new Color(0x1D2744);
+    private static final Locale PT_LOCALE = Locale.forLanguageTag("pt-PT");
+    private static final ZoneId APP_ZONE = ZoneId.systemDefault();
+    private static final LocalDate DEFAULT_DATE = LocalDate.of(2026, 6, 1);
 
     private FifaUiKit() {
     }
@@ -84,6 +92,11 @@ final class FifaUiKit {
     }
 
     private static void navigate(Component source, String item) {
+        if ("Calendário".equals(item)) {
+            showSimpleCalendar(source);
+            return;
+        }
+
         String className = screenClassName(item);
         if (className == null) {
             JOptionPane.showMessageDialog(source, "O ecrã \"" + item + "\" ainda não está implementado.", "Navegação", JOptionPane.INFORMATION_MESSAGE);
@@ -105,6 +118,23 @@ final class FifaUiKit {
         } catch (ReflectiveOperationException exception) {
             JOptionPane.showMessageDialog(source, "Não foi possível abrir o ecrã \"" + item + "\".", "Navegação", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private static void showSimpleCalendar(Component source) {
+        JOptionPane.showMessageDialog(
+                source,
+                """
+                <html>
+                  <b>Calendário ilustrativo</b><br><br>
+                  11 JUN 2026 - México vs África do Sul<br>
+                  12 JUN 2026 - Canadá vs Japão<br>
+                  13 JUN 2026 - Brasil vs Marrocos<br>
+                  15 JUN 2026 - Portugal vs Colômbia
+                </html>
+                """,
+                "Calendário",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private static String screenClassName(String item) {
@@ -192,12 +222,7 @@ final class FifaUiKit {
     }
 
     static JPanel dateBox() {
-        JPanel box = whiteBox(new BorderLayout(8, 0));
-        box.add(label("JUNHO 2026", 10, Font.BOLD, FIELD_TEXT), BorderLayout.CENTER);
-        JLabel icon = new JLabel(new LineIcon(15, LineIcon.Type.CALENDAR));
-        icon.setForeground(FIELD_TEXT);
-        box.add(icon, BorderLayout.EAST);
-        return box;
+        return new DateSelectorBox(DEFAULT_DATE);
     }
 
     static JPanel whiteBox(LayoutManager layout) {
@@ -346,6 +371,78 @@ final class FifaUiKit {
             int textY = (getHeight() - metrics.getHeight()) / 2 + metrics.getAscent();
             g2.drawString(text, textX, textY);
             g2.dispose();
+        }
+    }
+
+    private static final class DateSelectorBox extends JPanel {
+        private LocalDate selectedDate;
+        private final JLabel valueLabel;
+
+        private DateSelectorBox(LocalDate selectedDate) {
+            super(new BorderLayout(8, 0));
+            this.selectedDate = selectedDate;
+            setPreferredSize(new Dimension(160, 34));
+            setBackground(Color.WHITE);
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            setBorder(BorderFactory.createCompoundBorder(new RoundedBorder(10, new Color(0xDDE6F8)), BorderFactory.createEmptyBorder(0, 12, 0, 12)));
+            setToolTipText("Seleccionar data");
+
+            valueLabel = label(formatDate(selectedDate), 10, Font.BOLD, FIELD_TEXT);
+            add(valueLabel, BorderLayout.CENTER);
+
+            JLabel icon = new JLabel(new LineIcon(15, LineIcon.Type.CALENDAR));
+            icon.setForeground(FIELD_TEXT);
+            add(icon, BorderLayout.EAST);
+
+            MouseAdapter opener = new MouseAdapter() {
+                public void mouseClicked(MouseEvent event) {
+                    openDateDialog();
+                }
+            };
+            addMouseListener(opener);
+            valueLabel.addMouseListener(opener);
+            icon.addMouseListener(opener);
+        }
+
+        private void openDateDialog() {
+            Date initialDate = Date.from(selectedDate.atStartOfDay(APP_ZONE).toInstant());
+            Date firstWorldCupDate = Date.from(LocalDate.of(2026, 6, 1).atStartOfDay(APP_ZONE).toInstant());
+            Date lastWorldCupDate = Date.from(LocalDate.of(2026, 7, 31).atStartOfDay(APP_ZONE).toInstant());
+
+            JSpinner spinner = new JSpinner(new SpinnerDateModel(initialDate, firstWorldCupDate, lastWorldCupDate, Calendar.DAY_OF_MONTH));
+            spinner.setPreferredSize(new Dimension(180, 32));
+            spinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            spinner.setEditor(new JSpinner.DateEditor(spinner, "dd/MM/yyyy"));
+
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(5, 5, 5, 5);
+            gbc.gridy = 0;
+            gbc.gridx = 0;
+            gbc.anchor = GridBagConstraints.WEST;
+            panel.add(new JLabel("Data"), gbc);
+            gbc.gridx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            panel.add(spinner, gbc);
+
+            int result = JOptionPane.showConfirmDialog(this, panel, "Seleccionar data", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            Date chosenDate = (Date) spinner.getValue();
+            selectedDate = chosenDate.toInstant().atZone(APP_ZONE).toLocalDate();
+            valueLabel.setText(formatDate(selectedDate));
+            firePropertyChange("selectedDate", null, selectedDate);
+        }
+
+        private static String formatDate(LocalDate date) {
+            String month = date.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, PT_LOCALE)
+                    .replace(".", "")
+                    .toUpperCase(PT_LOCALE);
+            return "%02d %s %d".formatted(date.getDayOfMonth(), month, date.getYear());
         }
     }
 
