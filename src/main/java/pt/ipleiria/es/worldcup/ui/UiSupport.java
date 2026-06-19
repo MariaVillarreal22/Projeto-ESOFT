@@ -18,6 +18,11 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 
 final class UiSupport {
+    private static final int GROW_POLICY = GridConstraints.SIZEPOLICY_CAN_SHRINK
+            | GridConstraints.SIZEPOLICY_CAN_GROW
+            | GridConstraints.SIZEPOLICY_WANT_GROW;
+    private static final int FIXED_HEIGHT_POLICY = GridConstraints.SIZEPOLICY_CAN_SHRINK;
+
     private UiSupport() {
     }
 
@@ -71,8 +76,26 @@ final class UiSupport {
                 colSpan,
                 GridConstraints.ANCHOR_CENTER,
                 fill,
-                GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW,
-                GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW,
+                GROW_POLICY,
+                GROW_POLICY,
+                null,
+                null,
+                null,
+                0,
+                false
+        );
+    }
+
+    static GridConstraints fixedHeightConstraints(int row, int col, int rowSpan, int colSpan, int fill) {
+        return new GridConstraints(
+                row,
+                col,
+                rowSpan,
+                colSpan,
+                GridConstraints.ANCHOR_NORTH,
+                fill,
+                GROW_POLICY,
+                FIXED_HEIGHT_POLICY,
                 null,
                 null,
                 null,

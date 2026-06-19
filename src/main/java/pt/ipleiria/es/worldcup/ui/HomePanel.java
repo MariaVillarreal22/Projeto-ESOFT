@@ -91,9 +91,9 @@ final class HomePanel {
         openFasesButton.setOpaque(true);
         openFasesButton.setPreferredSize(new Dimension(132, 38));
         titlePanel.add(openFasesButton, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
-        rootPanel.add(titlePanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        rootPanel.add(titlePanel, UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         overviewPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 4, new Insets(0, 0, 0, 0), 14, 0);
-        rootPanel.add(overviewPanel, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        rootPanel.add(overviewPanel, UiSupport.fixedHeightConstraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         modulesPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 3, new Insets(0, 0, 0, 0), 16, 16);
         rootPanel.add(modulesPanel, UiSupport.constraints(2, 0, 1, 1, GridConstraints.FILL_BOTH));
     }
