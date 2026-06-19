@@ -11,10 +11,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Cursor;
+import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MainScreen extends JPanel {
     public MainScreen() {
@@ -51,6 +58,67 @@ public class MainScreen extends JPanel {
             linksPanel.add(link, constraints(i, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         }
         parent.add(linksPanel, constraints(row + 1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+    }
+
+
+    private void installNavigation(JLabel link, String item, boolean active) {
+        link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        link.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                navigate(item);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent event) {
+                link.setForeground(AppTheme.TEXT);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent event) {
+                link.setForeground(active ? AppTheme.TEXT : AppTheme.MUTED);
+            }
+        });
+    }
+
+    private void navigate(String item) {
+        String className = screenClassName(item);
+        if (className == null) {
+            JOptionPane.showMessageDialog(this, "O ecrã \"" + item + "\" ainda não está implementado.", "Navegação", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        try {
+            Object screen = Class.forName(className).getDeclaredConstructor().newInstance();
+            if (!(screen instanceof JPanel panel)) {
+                return;
+            }
+
+            Window window = SwingUtilities.getWindowAncestor(this);
+            if (window instanceof JFrame frame) {
+                frame.setContentPane(panel);
+                frame.revalidate();
+                frame.repaint();
+            }
+        } catch (ReflectiveOperationException exception) {
+            JOptionPane.showMessageDialog(this, "Não foi possível abrir o ecrã \"" + item + "\".", "Navegação", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String screenClassName(String item) {
+        return switch (item) {
+            case "Fases" -> "pt.ipleiria.es.worldcup.ui.MainScreen";
+            case "Calendario", "Classificacoes" -> null;
+            case "Estatisticas" -> "pt.ipleiria.es.worldcup.ui.StatsScreen";
+            case "Equipas" -> "pt.ipleiria.es.worldcup.ui.TeamsScreen";
+            case "Arbitros" -> "pt.ipleiria.es.worldcup.ui.RefereesScreen";
+            case "Estadios" -> "pt.ipleiria.es.worldcup.ui.StadiumsScreen";
+            case "Comprar" -> "pt.ipleiria.es.worldcup.ui.TicketPurchaseScreen";
+            case "Tickets purchased" -> "pt.ipleiria.es.worldcup.ui.TicketsPurchasedScreen";
+            case "Hoteis" -> "pt.ipleiria.es.worldcup.ui.HotelsScreen";
+            case "Locacoes" -> "pt.ipleiria.es.worldcup.ui.LocationsScreen";
+            default -> null;
+        };
     }
 
     private JPanel buildMainArea() {
