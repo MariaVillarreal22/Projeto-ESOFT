@@ -6,15 +6,12 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,20 +34,12 @@ public class MainScreen extends JPanel {
     private JButton calendarButton;
     private JButton standingsButton;
     private JButton statisticsButton;
-    private JButton teamsButton;
-    private JButton refereesButton;
-    private JButton stadiumsButton;
-    private JButton buyTicketsButton;
-    private JButton purchasedTicketsButton;
-    private JButton hotelsButton;
-    private JButton locationsButton;
     private JButton menuButton;
     private JTextField searchField;
     private JComboBox<WorldCupTeam> teamComboBox;
     private JLabel dateLabel;
 
     private View currentView = View.HOME;
-    private JButton activeButton;
     private WorldCupTeam selectedTeam = WorldCupData.defaultTeam();
     private final Timer refreshTimer;
 
@@ -59,7 +48,6 @@ public class MainScreen extends JPanel {
         setLayout(new BorderLayout());
         add(rootPanel, BorderLayout.CENTER);
         bindActions();
-        activeButton = homeButton;
         refreshTimer = new Timer(60000, event -> {
             if (currentView == View.CALENDAR || currentView == View.STANDINGS) {
                 renderCurrentView();
@@ -74,86 +62,44 @@ public class MainScreen extends JPanel {
         fasesButton.addActionListener(event -> show(View.FASES));
         calendarButton.addActionListener(event -> show(View.CALENDAR));
         standingsButton.addActionListener(event -> show(View.STANDINGS));
-        statisticsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.StatsScreen(), statisticsButton));
-        teamsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.TeamsScreen(), teamsButton));
-        refereesButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.RefereesScreen(), refereesButton));
-        stadiumsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.StadiumsScreen(), stadiumsButton));
-        buyTicketsButton.addActionListener(event -> showExternal(new TicketPurchaseScreen(), buyTicketsButton));
-        purchasedTicketsButton.addActionListener(event -> showExternal(new TicketsPurchasedScreen(), purchasedTicketsButton));
-        hotelsButton.addActionListener(event -> showExternal(new HotelsScreen(), hotelsButton));
-        locationsButton.addActionListener(event -> showExternal(new LocationsScreen(), locationsButton));
         menuButton.addActionListener(event -> show(View.HOME));
         teamComboBox.addActionListener(event -> {
             Object item = teamComboBox.getSelectedItem();
             if (item instanceof WorldCupTeam team && !team.equals(selectedTeam)) {
                 selectedTeam = team;
-                if (currentView != View.EXTERNAL) {
-                    renderCurrentView();
-                }
+                renderCurrentView();
             }
         });
     }
 
     private void show(View view) {
         currentView = view;
-        activeButton = buttonFor(view);
         renderCurrentView();
     }
 
-    private JButton buttonFor(View view) {
-        return switch (view) {
-            case HOME -> homeButton;
-            case FASES -> fasesButton;
-            case CALENDAR -> calendarButton;
-            case STANDINGS -> standingsButton;
-            case EXTERNAL -> activeButton;
-        };
-    }
-
     private void renderCurrentView() {
+        contentPanel.removeAll();
         JPanel viewPanel = switch (currentView) {
             case HOME -> new HomePanel(selectedTeam, () -> show(View.FASES)).getRootPanel();
             case FASES -> new FasesPanel(selectedTeam).getRootPanel();
             case CALENDAR -> new CalendarPanel().getRootPanel();
             case STANDINGS -> new StandingsPanel(selectedTeam).getRootPanel();
-            case EXTERNAL -> contentPanel;
         };
-        if (currentView != View.EXTERNAL) {
-            renderPanel(viewPanel);
-        }
-    }
-
-    private void showExternal(JPanel panel, JButton sourceButton) {
-        currentView = View.EXTERNAL;
-        activeButton = sourceButton;
-        renderPanel(panel);
-    }
-
-    private void renderPanel(JPanel panel) {
-        contentPanel.removeAll();
-        contentPanel.add(panel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+        contentPanel.add(viewPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
         updateActiveButtons();
         contentPanel.revalidate();
         contentPanel.repaint();
     }
 
     private void updateActiveButtons() {
-        styleNavButton(homeButton);
-        styleNavButton(fasesButton);
-        styleNavButton(calendarButton);
-        styleNavButton(standingsButton);
-        styleNavButton(statisticsButton);
-        styleNavButton(teamsButton);
-        styleNavButton(refereesButton);
-        styleNavButton(stadiumsButton);
-        styleNavButton(buyTicketsButton);
-        styleNavButton(purchasedTicketsButton);
-        styleNavButton(hotelsButton);
-        styleNavButton(locationsButton);
+        styleNavButton(homeButton, currentView == View.HOME);
+        styleNavButton(fasesButton, currentView == View.FASES);
+        styleNavButton(calendarButton, currentView == View.CALENDAR);
+        styleNavButton(standingsButton, currentView == View.STANDINGS);
+        styleNavButton(statisticsButton, false);
     }
 
-    private void styleNavButton(JButton button) {
-        boolean active = button == activeButton;
+    private void styleNavButton(JButton button, boolean active) {
         button.setForeground(active ? AppTheme.TEXT : new Color(0xC9D6EA));
         button.setBackground(active ? new Color(0x1A356E) : AppTheme.SIDEBAR);
     }
@@ -199,18 +145,11 @@ public class MainScreen extends JPanel {
         calendarButton = navButton("Calendario");
         standingsButton = navButton("Classificacoes");
         statisticsButton = navButton("Estatisticas");
-        teamsButton = navButton("Equipas");
-        refereesButton = navButton("Arbitros");
-        stadiumsButton = navButton("Estadios");
-        buyTicketsButton = navButton("Comprar");
-        purchasedTicketsButton = navButton("Tickets purchased");
-        hotelsButton = navButton("Hoteis");
-        locationsButton = navButton("Locacoes");
         addSidebarSection(sidebarPanel, 1, "GERAL", homeButton);
         addSidebarSection(sidebarPanel, 3, "COMPETICOES", fasesButton, calendarButton, standingsButton, statisticsButton);
-        addSidebarSection(sidebarPanel, 5, "ENTIDADES", teamsButton, refereesButton, stadiumsButton);
-        addSidebarSection(sidebarPanel, 7, "BILHETES", buyTicketsButton, purchasedTicketsButton);
-        addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", hotelsButton, locationsButton);
+        addSidebarSection(sidebarPanel, 5, "ENTIDADES", navButton("Equipas"), navButton("Arbitros"), navButton("Estadios"));
+        addSidebarSection(sidebarPanel, 7, "BILHETES", navButton("Comprar"), navButton("Tickets purchased"));
+        addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", navButton("Hoteis"), navButton("Locacoes"));
         rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
 
         mainPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 0);
@@ -268,8 +207,7 @@ public class MainScreen extends JPanel {
         HOME,
         FASES,
         CALENDAR,
-        STANDINGS,
-        EXTERNAL
+        STANDINGS
     }
 
     private static final class TeamRenderer extends DefaultListCellRenderer {
@@ -323,14 +261,4 @@ public class MainScreen extends JPanel {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("FIFA World Cup Manager");
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setContentPane(new MainScreen());
-            frame.setSize(1280, 760);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
-    }
 }
