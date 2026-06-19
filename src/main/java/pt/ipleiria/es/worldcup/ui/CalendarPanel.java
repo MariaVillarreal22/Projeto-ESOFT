@@ -38,8 +38,9 @@ final class CalendarPanel {
     }
 
     private JPanel calendarCard(WorldCupFixtures.CalendarGroup group) {
-        JPanel card = UiSupport.roundedPanel(AppTheme.CHIP, 2, 1, new Insets(12, 18, 14, 18), 0, 8, 10);
-        card.setPreferredSize(new Dimension(570, 326));
+        JPanel card = UiSupport.roundedPanel(AppTheme.CHIP, 2, 1, new Insets(12, 16, 14, 16), 0, 8, 10);
+        card.setPreferredSize(new Dimension(505, 318));
+        card.setMinimumSize(new Dimension(480, 318));
         card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
 
         JPanel header = UiSupport.panel(AppTheme.CHIP, 1, 2, new Insets(0, 0, 2, 0), 14, 0);
@@ -69,18 +70,22 @@ final class CalendarPanel {
 
     private JPanel matchRow(WorldCupFixtures.CalendarMatch match) {
         JPanel row = UiSupport.panel(AppTheme.CHIP, 2, 1, new Insets(1, 0, 1, 0), 0, 2);
-        JPanel top = UiSupport.panel(AppTheme.CHIP, 1, 5, new Insets(0, 0, 0, 0), 8, 0);
-        top.add(UiSupport.label(DATE_FORMAT.format(match.date()).toUpperCase(Locale.ENGLISH) + "  " + TIME_FORMAT.format(match.time()), GROUP_TITLE, new Font("Inter", Font.BOLD, 11)), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
+        JPanel top = UiSupport.panel(AppTheme.CHIP, 1, 5, new Insets(0, 0, 0, 0), 6, 0);
+        JLabel time = UiSupport.label(DATE_FORMAT.format(match.date()).toUpperCase(Locale.ENGLISH) + "  " + TIME_FORMAT.format(match.time()), GROUP_TITLE, new Font("Inter", Font.BOLD, 10));
+        time.setPreferredSize(new Dimension(84, 20));
+        top.add(time, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
         top.add(teamLabel(match.home()), UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        top.add(UiSupport.centeredLabel(scoreText(match), match.score() == null ? AppTheme.MUTED : GROUP_TITLE, new Font("Inter", Font.BOLD, 11)), UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_NONE));
+        JLabel score = UiSupport.centeredLabel(scoreText(match), match.score() == null ? AppTheme.MUTED : GROUP_TITLE, new Font("Inter", Font.BOLD, 11));
+        score.setPreferredSize(new Dimension(32, 20));
+        top.add(score, UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_NONE));
         top.add(teamLabel(match.away()), UiSupport.constraints(0, 3, 1, 1, GridConstraints.FILL_HORIZONTAL));
         WorldCupFixtures.MatchStatus status = WorldCupFixtures.status(match);
         JLabel statusLabel = UiSupport.label(status.label(), status.color(), new Font("Inter", Font.BOLD, 11));
-        statusLabel.setPreferredSize(new Dimension(112, 20));
+        statusLabel.setPreferredSize(new Dimension(96, 20));
         top.add(statusLabel, UiSupport.constraints(0, 4, 1, 1, GridConstraints.FILL_NONE));
         row.add(top, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         JLabel venue = UiSupport.label(match.venue() + ", " + match.city(), AppTheme.MUTED, new Font("Inter", Font.PLAIN, 11));
-        venue.setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 0));
+        venue.setBorder(BorderFactory.createEmptyBorder(0, 90, 0, 0));
         row.add(venue, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         return row;
     }
@@ -90,6 +95,7 @@ final class CalendarPanel {
         JLabel label = UiSupport.label(name, AppTheme.TEXT, new Font("Inter", Font.BOLD, 12));
         label.setIcon(AppIcons.teamFlag(team.code(), 24, 18));
         label.setIconTextGap(6);
+        label.setPreferredSize(new Dimension(105, 20));
         return label;
     }
 
@@ -101,9 +107,9 @@ final class CalendarPanel {
     }
 
     private void buildUi() {
-        rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(18, 32, 42, 32), 0, 18);
+        rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(24, 28, 34, 28), 0, 16);
         rootPanel.add(UiSupport.label("CALENDARIO", AppTheme.TEXT, AppTheme.TITLE_FONT), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        groupsPanel = UiSupport.panel(AppTheme.BACKGROUND, 6, 2, new Insets(0, 0, 0, 0), 8, 10);
+        groupsPanel = UiSupport.panel(AppTheme.BACKGROUND, 6, 2, new Insets(0, 0, 0, 0), 10, 12);
         JScrollPane scrollPane = new JScrollPane(groupsPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(AppTheme.BACKGROUND);

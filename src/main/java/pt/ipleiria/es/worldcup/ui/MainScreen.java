@@ -112,7 +112,8 @@ public class MainScreen extends JPanel {
         button.setFont(AppTheme.BODY_FONT);
         button.setForeground(new Color(0xC9D6EA));
         button.setBackground(AppTheme.SIDEBAR);
-        button.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        button.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        button.setPreferredSize(new Dimension(224, 38));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
@@ -132,10 +133,12 @@ public class MainScreen extends JPanel {
 
     private void buildUi() {
         rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 2, new Insets(0, 0, 0, 0), 0, 0);
-        sidebarPanel = UiSupport.panel(AppTheme.SIDEBAR, 11, 1, new Insets(14, 16, 14, 16), 0, 8);
-        sidebarPanel.setPreferredSize(new Dimension(256, 720));
+        sidebarPanel = UiSupport.panel(AppTheme.SIDEBAR, 11, 1, new Insets(18, 18, 18, 18), 0, 10);
+        sidebarPanel.setPreferredSize(new Dimension(276, 720));
         JButton brand = navButton("FIFA\u00B0");
         brand.setFont(AppTheme.BRAND_FONT);
+        brand.setForeground(AppTheme.TEXT);
+        brand.setPreferredSize(new Dimension(224, 64));
         brand.addActionListener(event -> show(View.HOME));
         sidebarPanel.add(brand, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         homeButton = navButton("Painel principal");
@@ -151,7 +154,7 @@ public class MainScreen extends JPanel {
         rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
 
         mainPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 0);
-        headerPanel = UiSupport.panel(AppTheme.HEADER, 1, 4, new Insets(11, 30, 11, 30), 24, 0);
+        headerPanel = UiSupport.panel(AppTheme.HEADER, 1, 4, new Insets(12, 24, 12, 24), 14, 0);
         headerPanel.setPreferredSize(new Dimension(900, 72));
         menuButton = new HeaderMenuButton();
         menuButton.setUI(new BasicButtonUI());
@@ -167,6 +170,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(menuButton, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
 
         JPanel searchPanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 8, 0);
+        searchPanel.setPreferredSize(new Dimension(260, 44));
         JLabel searchIcon = new JLabel(AppIcons.search());
         searchIcon.setForeground(new Color(0x111827));
         searchPanel.add(searchIcon, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
@@ -176,6 +180,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(searchPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
         JPanel comboPanel = UiSupport.panel(Color.WHITE, 1, 1, new Insets(0, 8, 0, 8), 0, 0);
+        comboPanel.setPreferredSize(new Dimension(240, 44));
         teamComboBox = new JComboBox<>(WorldCupData.teams());
         teamComboBox.setSelectedItem(selectedTeam);
         teamComboBox.setRenderer(new TeamRenderer());
@@ -185,6 +190,7 @@ public class MainScreen extends JPanel {
         headerPanel.add(comboPanel, UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
         JPanel datePanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 10, 0);
+        datePanel.setPreferredSize(new Dimension(176, 44));
         dateLabel = UiSupport.label("JUNE 2026", new Color(0x111827), AppTheme.BODY_FONT);
         datePanel.add(dateLabel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         JLabel calendar = new JLabel(AppIcons.calendar());
