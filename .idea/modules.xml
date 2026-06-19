@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Proyecto ESOFT.iml" filepath="$PROJECT_DIR$/.idea/Proyecto ESOFT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Proyecto ESOFT.iml" filepath="$PROJECT_DIR$/Proyecto ESOFT.iml" />
     </modules>
   </component>
 </project>

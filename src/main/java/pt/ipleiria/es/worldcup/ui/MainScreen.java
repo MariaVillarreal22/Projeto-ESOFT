@@ -1,308 +1,336 @@
 package pt.ipleiria.es.worldcup.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.WindowConstants;
+import javax.swing.plaf.basic.BasicButtonUI;
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
+import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Window;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.RenderingHints;
 
 public class MainScreen extends JPanel {
+    private JPanel rootPanel;
+    private JPanel sidebarPanel;
+    private JPanel mainPanel;
+    private JPanel headerPanel;
+    private JPanel contentPanel;
+    private JButton homeButton;
+    private JButton fasesButton;
+    private JButton calendarButton;
+    private JButton standingsButton;
+    private JButton statisticsButton;
+    private JButton teamsButton;
+    private JButton refereesButton;
+    private JButton stadiumsButton;
+    private JButton buyTicketsButton;
+    private JButton purchasedTicketsButton;
+    private JButton hotelsButton;
+    private JButton locationsButton;
+    private JButton menuButton;
+    private JTextField searchField;
+    private JComboBox<WorldCupTeam> teamComboBox;
+    private JLabel dateLabel;
+
+    private View currentView = View.HOME;
+    private JButton activeButton;
+    private WorldCupTeam selectedTeam = WorldCupData.defaultTeam();
+    private final Timer refreshTimer;
+
     public MainScreen() {
-        setBackground(AppTheme.BACKGROUND);
-        setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), 0, 0));
-
-        add(buildSidebar(), constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
-        add(buildMainArea(), constraints(0, 1, 1, 1, GridConstraints.FILL_BOTH));
-    }
-
-    private JPanel buildSidebar() {
-        JPanel sidebar = panel(AppTheme.SIDEBAR, 15, 1, new Insets(14, 16, 14, 16), 0, 8);
-        sidebar.setPreferredSize(new Dimension(256, 720));
-
-        JLabel brand = label("FIFA\u00B0", AppTheme.TEXT, AppTheme.BRAND_FONT);
-        sidebar.add(brand, constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        addNavSection(sidebar, 1, "COMPETICOES", new String[]{"Fases", "Calendario", "Classificacoes", "Estatisticas"}, 0);
-        addNavSection(sidebar, 3, "ENTIDADES", new String[]{"Equipas", "Arbitros", "Estadios"}, -1);
-        addNavSection(sidebar, 5, "BILHETES", new String[]{"Comprar", "Tickets purchased"}, -1);
-        addNavSection(sidebar, 7, "HOSPITALIDADE", new String[]{"Hoteis", "Locacoes"}, -1);
-
-        sidebar.add(new Spacer(), constraints(14, 0, 1, 1, GridConstraints.FILL_BOTH));
-        return sidebar;
-    }
-
-    private void addNavSection(JPanel parent, int row, String title, String[] links, int activeIndex) {
-        JLabel heading = label(title, AppTheme.TEXT, AppTheme.SECTION_FONT);
-        parent.add(heading, constraints(row, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        JPanel linksPanel = panel(AppTheme.SIDEBAR, links.length, 1, new Insets(0, 0, 12, 0), 0, 0);
-        for (int i = 0; i < links.length; i++) {
-            JLabel link = label(links[i], i == activeIndex ? AppTheme.TEXT : AppTheme.MUTED, AppTheme.BODY_FONT);
-            installNavigation(link, links[i], i == activeIndex);
-            linksPanel.add(link, constraints(i, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        }
-        parent.add(linksPanel, constraints(row + 1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-    }
-
-
-    private void installNavigation(JLabel link, String item, boolean active) {
-        link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        link.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                navigate(item);
+        buildUi();
+        setLayout(new BorderLayout());
+        add(rootPanel, BorderLayout.CENTER);
+        bindActions();
+        activeButton = homeButton;
+        refreshTimer = new Timer(60000, event -> {
+            if (currentView == View.CALENDAR || currentView == View.STANDINGS) {
+                renderCurrentView();
             }
+        });
+        refreshTimer.start();
+        renderCurrentView();
+    }
 
-            @Override
-            public void mouseEntered(MouseEvent event) {
-                link.setForeground(AppTheme.TEXT);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent event) {
-                link.setForeground(active ? AppTheme.TEXT : AppTheme.MUTED);
+    private void bindActions() {
+        homeButton.addActionListener(event -> show(View.HOME));
+        fasesButton.addActionListener(event -> show(View.FASES));
+        calendarButton.addActionListener(event -> show(View.CALENDAR));
+        standingsButton.addActionListener(event -> show(View.STANDINGS));
+        statisticsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.StatsScreen(), statisticsButton));
+        teamsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.TeamsScreen(), teamsButton));
+        refereesButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.RefereesScreen(), refereesButton));
+        stadiumsButton.addActionListener(event -> showExternal(new pt.ipleiria.es.worldcup.StadiumsScreen(), stadiumsButton));
+        buyTicketsButton.addActionListener(event -> showExternal(new TicketPurchaseScreen(), buyTicketsButton));
+        purchasedTicketsButton.addActionListener(event -> showExternal(new TicketsPurchasedScreen(), purchasedTicketsButton));
+        hotelsButton.addActionListener(event -> showExternal(new HotelsScreen(), hotelsButton));
+        locationsButton.addActionListener(event -> showExternal(new LocationsScreen(), locationsButton));
+        menuButton.addActionListener(event -> show(View.HOME));
+        teamComboBox.addActionListener(event -> {
+            Object item = teamComboBox.getSelectedItem();
+            if (item instanceof WorldCupTeam team && !team.equals(selectedTeam)) {
+                selectedTeam = team;
+                if (currentView != View.EXTERNAL) {
+                    renderCurrentView();
+                }
             }
         });
     }
 
-    private void navigate(String item) {
-        if ("Calendario".equals(item)) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    """
-                    <html>
-                      <b>Calendário ilustrativo</b><br><br>
-                      11 JUN 2026 - México vs África do Sul<br>
-                      12 JUN 2026 - Canadá vs Japão<br>
-                      13 JUN 2026 - Brasil vs Marrocos<br>
-                      15 JUN 2026 - Portugal vs Colômbia
-                    </html>
-                    """,
-                    "Calendário",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-            return;
-        }
-
-        String className = screenClassName(item);
-        if (className == null) {
-            JOptionPane.showMessageDialog(this, "O ecrã \"" + item + "\" ainda não está implementado.", "Navegação", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        try {
-            Object screen = Class.forName(className).getDeclaredConstructor().newInstance();
-            if (!(screen instanceof JPanel panel)) {
-                return;
-            }
-
-            Window window = SwingUtilities.getWindowAncestor(this);
-            if (window instanceof JFrame frame) {
-                frame.setContentPane(panel);
-                frame.revalidate();
-                frame.repaint();
-            }
-        } catch (ReflectiveOperationException exception) {
-            JOptionPane.showMessageDialog(this, "Não foi possível abrir o ecrã \"" + item + "\".", "Navegação", JOptionPane.ERROR_MESSAGE);
-        }
+    private void show(View view) {
+        currentView = view;
+        activeButton = buttonFor(view);
+        renderCurrentView();
     }
 
-    private String screenClassName(String item) {
-        return switch (item) {
-            case "Fases" -> "pt.ipleiria.es.worldcup.ui.MainScreen";
-            case "Calendario", "Classificacoes" -> null;
-            case "Estatisticas" -> "pt.ipleiria.es.worldcup.ui.StatsScreen";
-            case "Equipas" -> "pt.ipleiria.es.worldcup.ui.TeamsScreen";
-            case "Arbitros" -> "pt.ipleiria.es.worldcup.ui.RefereesScreen";
-            case "Estadios" -> "pt.ipleiria.es.worldcup.ui.StadiumsScreen";
-            case "Comprar" -> "pt.ipleiria.es.worldcup.ui.TicketPurchaseScreen";
-            case "Tickets purchased" -> "pt.ipleiria.es.worldcup.ui.TicketsPurchasedScreen";
-            case "Hoteis" -> "pt.ipleiria.es.worldcup.ui.HotelsScreen";
-            case "Locacoes" -> "pt.ipleiria.es.worldcup.ui.LocationsScreen";
-            default -> null;
+    private JButton buttonFor(View view) {
+        return switch (view) {
+            case HOME -> homeButton;
+            case FASES -> fasesButton;
+            case CALENDAR -> calendarButton;
+            case STANDINGS -> standingsButton;
+            case EXTERNAL -> activeButton;
         };
     }
 
-    private JPanel buildMainArea() {
-        JPanel main = panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 0);
-        main.add(buildHeader(), constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        main.add(buildContent(), constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-        return main;
+    private void renderCurrentView() {
+        JPanel viewPanel = switch (currentView) {
+            case HOME -> new HomePanel(selectedTeam, () -> show(View.FASES)).getRootPanel();
+            case FASES -> new FasesPanel(selectedTeam).getRootPanel();
+            case CALENDAR -> new CalendarPanel().getRootPanel();
+            case STANDINGS -> new StandingsPanel(selectedTeam).getRootPanel();
+            case EXTERNAL -> contentPanel;
+        };
+        if (currentView != View.EXTERNAL) {
+            renderPanel(viewPanel);
+        }
     }
 
-    private JPanel buildHeader() {
-        JPanel header = panel(AppTheme.HEADER, 1, 4, new Insets(11, 30, 11, 30), 24, 0);
-        header.setPreferredSize(new Dimension(900, 72));
+    private void showExternal(JPanel panel, JButton sourceButton) {
+        currentView = View.EXTERNAL;
+        activeButton = sourceButton;
+        renderPanel(panel);
+    }
 
-        JButton menu = iconButton(AppIcons.menu());
-        header.add(menu, constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+    private void renderPanel(JPanel panel) {
+        contentPanel.removeAll();
+        contentPanel.add(panel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+        updateActiveButtons();
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
 
-        JPanel searchBox = whitePanel(1, 2, new Insets(0, 12, 0, 12), 8, 0);
+    private void updateActiveButtons() {
+        styleNavButton(homeButton);
+        styleNavButton(fasesButton);
+        styleNavButton(calendarButton);
+        styleNavButton(standingsButton);
+        styleNavButton(statisticsButton);
+        styleNavButton(teamsButton);
+        styleNavButton(refereesButton);
+        styleNavButton(stadiumsButton);
+        styleNavButton(buyTicketsButton);
+        styleNavButton(purchasedTicketsButton);
+        styleNavButton(hotelsButton);
+        styleNavButton(locationsButton);
+    }
+
+    private void styleNavButton(JButton button) {
+        boolean active = button == activeButton;
+        button.setForeground(active ? AppTheme.TEXT : new Color(0xC9D6EA));
+        button.setBackground(active ? new Color(0x1A356E) : AppTheme.SIDEBAR);
+    }
+
+    private JButton navButton(String text) {
+        JButton button = new SidebarButton(text);
+        button.setUI(new BasicButtonUI());
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setFont(AppTheme.BODY_FONT);
+        button.setForeground(new Color(0xC9D6EA));
+        button.setBackground(AppTheme.SIDEBAR);
+        button.setBorder(BorderFactory.createEmptyBorder(9, 14, 9, 14));
+        button.setPreferredSize(new Dimension(224, 38));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setOpaque(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    private void addSidebarSection(JPanel parent, int row, String title, JButton... buttons) {
+        parent.add(UiSupport.label(title, AppTheme.TEXT, AppTheme.SECTION_FONT), UiSupport.constraints(row, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        JPanel links = UiSupport.panel(AppTheme.SIDEBAR, buttons.length, 1, new Insets(0, 0, 12, 0), 0, 1);
+        for (int i = 0; i < buttons.length; i++) {
+            links.add(buttons[i], UiSupport.constraints(i, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        }
+        parent.add(links, UiSupport.constraints(row + 1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+    }
+
+    private void buildUi() {
+        rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 2, new Insets(0, 0, 0, 0), 0, 0);
+        sidebarPanel = UiSupport.panel(AppTheme.SIDEBAR, 11, 1, new Insets(18, 18, 18, 18), 0, 10);
+        sidebarPanel.setPreferredSize(new Dimension(276, 720));
+        JButton brand = navButton("FIFA\u00B0");
+        brand.setFont(AppTheme.BRAND_FONT);
+        brand.setForeground(AppTheme.TEXT);
+        brand.setPreferredSize(new Dimension(224, 64));
+        brand.addActionListener(event -> show(View.HOME));
+        sidebarPanel.add(brand, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        homeButton = navButton("Painel principal");
+        fasesButton = navButton("Fases");
+        calendarButton = navButton("Calendario");
+        standingsButton = navButton("Classificacoes");
+        statisticsButton = navButton("Estatisticas");
+        teamsButton = navButton("Equipas");
+        refereesButton = navButton("Arbitros");
+        stadiumsButton = navButton("Estadios");
+        buyTicketsButton = navButton("Comprar");
+        purchasedTicketsButton = navButton("Tickets purchased");
+        hotelsButton = navButton("Hoteis");
+        locationsButton = navButton("Locacoes");
+        addSidebarSection(sidebarPanel, 1, "GERAL", homeButton);
+        addSidebarSection(sidebarPanel, 3, "COMPETICOES", fasesButton, calendarButton, standingsButton, statisticsButton);
+        addSidebarSection(sidebarPanel, 5, "ENTIDADES", teamsButton, refereesButton, stadiumsButton);
+        addSidebarSection(sidebarPanel, 7, "BILHETES", buyTicketsButton, purchasedTicketsButton);
+        addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", hotelsButton, locationsButton);
+        rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
+
+        mainPanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 0);
+        headerPanel = UiSupport.panel(AppTheme.HEADER, 1, 4, new Insets(12, 24, 12, 24), 14, 0);
+        headerPanel.setPreferredSize(new Dimension(900, 72));
+        menuButton = new HeaderMenuButton();
+        menuButton.setUI(new BasicButtonUI());
+        menuButton.setIcon(AppIcons.menu());
+        menuButton.setForeground(Color.WHITE);
+        menuButton.setBackground(new Color(0x10245A));
+        menuButton.setPreferredSize(new Dimension(62, 58));
+        menuButton.setBorder(BorderFactory.createEmptyBorder());
+        menuButton.setBorderPainted(false);
+        menuButton.setContentAreaFilled(false);
+        menuButton.setFocusPainted(false);
+        menuButton.setOpaque(false);
+        headerPanel.add(menuButton, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+
+        JPanel searchPanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 8, 0);
+        searchPanel.setPreferredSize(new Dimension(260, 44));
         JLabel searchIcon = new JLabel(AppIcons.search());
         searchIcon.setForeground(new Color(0x111827));
-        searchBox.add(searchIcon, constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
-        JTextField search = new JTextField("Pesquisar fase, equipa, estadio...");
-        search.setForeground(new Color(0x111827));
-        search.setBorder(BorderFactory.createEmptyBorder());
-        searchBox.add(search, constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        header.add(searchBox, constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        searchPanel.add(searchIcon, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
+        searchField = new JTextField("Pesquisar fase, equipa, estadio...");
+        searchField.setBorder(BorderFactory.createEmptyBorder());
+        searchPanel.add(searchField, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        headerPanel.add(searchPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
-        JPanel team = whitePanel(1, 2, new Insets(0, 12, 0, 12), 10, 0);
-        team.add(new JLabel(AppIcons.argentinaFlag()), constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
-        team.add(label("ARGENTINA", new Color(0x111827), AppTheme.BODY_FONT), constraints(0, 1, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        header.add(team, constraints(0, 2, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        JPanel comboPanel = UiSupport.panel(Color.WHITE, 1, 1, new Insets(0, 8, 0, 8), 0, 0);
+        comboPanel.setPreferredSize(new Dimension(240, 44));
+        teamComboBox = new JComboBox<>(WorldCupData.teams());
+        teamComboBox.setSelectedItem(selectedTeam);
+        teamComboBox.setRenderer(new TeamRenderer());
+        teamComboBox.setBorder(BorderFactory.createEmptyBorder());
+        teamComboBox.setBackground(Color.WHITE);
+        comboPanel.add(teamComboBox, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
+        headerPanel.add(comboPanel, UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_HORIZONTAL));
 
-        JPanel date = whitePanel(1, 2, new Insets(0, 12, 0, 12), 10, 0);
-        date.add(label("JUNE 2026", new Color(0x111827), AppTheme.BODY_FONT), constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        JPanel datePanel = UiSupport.panel(Color.WHITE, 1, 2, new Insets(0, 12, 0, 12), 10, 0);
+        datePanel.setPreferredSize(new Dimension(176, 44));
+        dateLabel = UiSupport.label("JUNE 2026", new Color(0x111827), AppTheme.BODY_FONT);
+        datePanel.add(dateLabel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         JLabel calendar = new JLabel(AppIcons.calendar());
         calendar.setForeground(new Color(0x111827));
-        date.add(calendar, constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
-        header.add(date, constraints(0, 3, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        return header;
+        datePanel.add(calendar, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
+        headerPanel.add(datePanel, UiSupport.constraints(0, 3, 1, 1, GridConstraints.FILL_HORIZONTAL));
+
+        mainPanel.add(headerPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        contentPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 1, new Insets(0, 0, 0, 0), 0, 0);
+        mainPanel.add(contentPanel, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
+        rootPanel.add(mainPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_BOTH));
     }
 
-    private JScrollPane buildContent() {
-        JPanel content = panel(AppTheme.BACKGROUND, 4, 1, new Insets(16, 32, 42, 32), 0, 18);
-
-        JPanel titleRow = panel(AppTheme.BACKGROUND, 1, 2, new Insets(0, 0, 0, 0), 16, 0);
-        JPanel titleText = panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 3);
-        titleText.add(label("ENGENHARIA DE SOFTWARE - PROJETO", AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        titleText.add(label("FASES", AppTheme.TEXT, AppTheme.TITLE_FONT), constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        titleRow.add(titleText, constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        titleRow.add(primaryButton("Gerir calendario"), constraints(0, 1, 1, 1, GridConstraints.FILL_NONE));
-        content.add(titleRow, constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        content.add(buildOverview(), constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        content.add(new BracketPanel(), constraints(2, 0, 1, 1, GridConstraints.FILL_BOTH));
-        content.add(buildModuleGrid(), constraints(3, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        JScrollPane scrollPane = new JScrollPane(content);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getViewport().setBackground(AppTheme.BACKGROUND);
-        return scrollPane;
+    private enum View {
+        HOME,
+        FASES,
+        CALENDAR,
+        STANDINGS,
+        EXTERNAL
     }
 
-    private JPanel buildOverview() {
-        JPanel overview = panel(AppTheme.BACKGROUND, 1, 4, new Insets(0, 0, 0, 0), 18, 0);
-        String[][] cards = {
-                {"Equipas", "48", "Participantes organizados por grupos e classificacoes."},
-                {"Jogos", "104", "Calendario, estadios e equipas de arbitragem."},
-                {"Bilhetes", "Venda", "Compra, reservas e historico de bilhetes comprados."},
-                {"Logistica", "Ativa", "Alojamento e deslocacoes das equipas durante o evento."}
-        };
-
-        for (int i = 0; i < cards.length; i++) {
-            overview.add(summaryCard(null, cards[i][0], cards[i][1], cards[i][2]), constraints(0, i, 1, 1, GridConstraints.FILL_BOTH));
+    private static final class TeamRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof WorldCupTeam team) {
+                label.setText(team.code() + "  " + team.name().toUpperCase());
+                label.setIcon(AppIcons.teamFlag(team.code()));
+            }
+            label.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
+            return label;
         }
-        return overview;
     }
 
-    private JPanel buildModuleGrid() {
-        JPanel grid = panel(AppTheme.BACKGROUND, 2, 3, new Insets(0, 0, 0, 0), 18, 18);
-        Object[][] modules = {
-                {AppIcons.module("CAL", new Color(0x1D5DDB)), "Calendario", "Definir jogos", "Datas, estadios, confrontos e fases do campeonato."},
-                {AppIcons.module("EQ", new Color(0x61D394)), "Equipas", "Gerir participantes", "Grupos, classificacoes, vitorias, empates e pontos."},
-                {AppIcons.module("VAR", new Color(0xF5C867)), "Arbitragem", "Atribuir equipas", "Arbitros principais, assistentes e VAR por jogo."},
-                {AppIcons.module("TKT", new Color(0xEF6F6C)), "Bilhetes", "Venda e historico", "Compra, quantidade, termos e bilhetes adquiridos."},
-                {AppIcons.module("BUS", new Color(0x7CA7FF)), "Deslocacoes", "Planeamento", "Viagens das equipas entre hoteis, estadios e cidades."},
-                {AppIcons.module("HOT", new Color(0xA985FF)), "Alojamento", "Hoteis", "Reservas, distancia ao estadio e avaliacao do hotel."}
-        };
-
-        for (int i = 0; i < modules.length; i++) {
-            grid.add(summaryCard((javax.swing.Icon) modules[i][0], (String) modules[i][1], (String) modules[i][2], (String) modules[i][3]), constraints(i / 3, i % 3, 1, 1, GridConstraints.FILL_BOTH));
-        }
-        return grid;
-    }
-
-    private JPanel summaryCard(javax.swing.Icon icon, String title, String value, String description) {
-        JPanel card = panel(AppTheme.PANEL_SOFT, 1, icon == null ? 1 : 2, new Insets(16, 16, 16, 16), 14, 0);
-        card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 20)));
-
-        if (icon != null) {
-            JLabel image = new JLabel(icon);
-            card.add(image, constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
+    private static final class SidebarButton extends JButton {
+        private SidebarButton(String text) {
+            super(text);
         }
 
-        JPanel text = panel(AppTheme.PANEL_SOFT, 3, 1, new Insets(0, 0, 0, 0), 0, 7);
-        text.add(label(title.toUpperCase(), AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        text.add(label(value, AppTheme.TEXT, new Font("Inter", Font.BOLD, 20)), constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        text.add(label("<html><body style='width: 210px'>" + description + "</body></html>", AppTheme.MUTED, AppTheme.BODY_FONT), constraints(2, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        card.add(text, constraints(0, icon == null ? 0 : 1, 1, 1, GridConstraints.FILL_BOTH));
-        return card;
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Color background = getModel().isPressed() ? new Color(0x24498F) : getBackground();
+            if (getModel().isRollover()) {
+                background = new Color(0x18305F);
+            }
+            g2.setColor(background);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 7, 7);
+            g2.dispose();
+            super.paintComponent(g);
+        }
     }
 
-    private JButton iconButton(javax.swing.Icon icon) {
-        JButton button = new JButton(icon);
-        button.setForeground(AppTheme.TEXT);
-        button.setBackground(AppTheme.HEADER);
-        button.setBorder(BorderFactory.createEmptyBorder());
-        button.setFocusPainted(false);
-        return button;
+    private static final class HeaderMenuButton extends JButton {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Color base = getModel().isPressed() ? new Color(0x07163D) : getBackground();
+            if (getModel().isRollover()) {
+                base = new Color(0x17336F);
+            }
+            g2.setColor(base);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+            g2.setColor(new Color(255, 255, 255, 72));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
+            g2.dispose();
+            super.paintComponent(g);
+        }
     }
 
-    private JButton primaryButton(String text) {
-        JButton button = new JButton(text);
-        button.setBackground(AppTheme.ACCENT);
-        button.setForeground(new Color(0x08233C));
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
-        return button;
-    }
-
-    private JPanel whitePanel(int rows, int cols, Insets insets, int hGap, int vGap) {
-        JPanel panel = panel(Color.WHITE, rows, cols, insets, hGap, vGap);
-        panel.setPreferredSize(new Dimension(180, 40));
-        return panel;
-    }
-
-    private JPanel panel(Color background, int rows, int cols, Insets insets, int hGap, int vGap) {
-        JPanel panel = new JPanel();
-        panel.setOpaque(true);
-        panel.setBackground(background);
-        panel.setLayout(new GridLayoutManager(rows, cols, insets, hGap, vGap));
-        return panel;
-    }
-
-    private JLabel label(String text, Color color, Font font) {
-        JLabel label = new JLabel(text);
-        label.setForeground(color);
-        label.setFont(font);
-        label.setVerticalAlignment(SwingConstants.CENTER);
-        return label;
-    }
-
-    private GridConstraints constraints(int row, int col, int rowSpan, int colSpan, int fill) {
-        return new GridConstraints(
-                row,
-                col,
-                rowSpan,
-                colSpan,
-                GridConstraints.ANCHOR_CENTER,
-                fill,
-                GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW,
-                GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_WANT_GROW,
-                null,
-                null,
-                null,
-                0,
-                false
-        );
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("FIFA World Cup Manager");
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setContentPane(new MainScreen());
+            frame.setSize(1280, 760);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
     }
 }
