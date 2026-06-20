@@ -127,10 +127,139 @@ public class StadiumsScreen {
         addStadiumButton.setFocusPainted(false);
         addStadiumButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        addStadiumButton.addActionListener(e -> showAddStadiumDialog());
+
         buttonPanel.add(addStadiumButton);
         card.add(buttonPanel, BorderLayout.SOUTH);
 
         return card;
+    }
+
+    private void showAddStadiumDialog() {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Adicionar Estádio");
+        dialog.setModal(true);
+        dialog.setSize(450, 350);
+        dialog.setLocationRelativeTo(rootPanel);
+        dialog.setLayout(new GridBagLayout());
+        dialog.getContentPane().setBackground(new Color(15, 42, 92));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Nombre
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JLabel nameLabel = new JLabel("Nombre del Estádio:");
+        nameLabel.setForeground(Color.WHITE);
+        dialog.add(nameLabel, gbc);
+        gbc.gridx = 1;
+        JTextField nameField = new JTextField(15);
+        dialog.add(nameField, gbc);
+
+        // Ciudad
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel cityLabel = new JLabel("Cidade:");
+        cityLabel.setForeground(Color.WHITE);
+        dialog.add(cityLabel, gbc);
+        gbc.gridx = 1;
+        JTextField cityField = new JTextField(15);
+        dialog.add(cityField, gbc);
+
+        // País
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        JLabel countryLabel = new JLabel("País:");
+        countryLabel.setForeground(Color.WHITE);
+        dialog.add(countryLabel, gbc);
+        gbc.gridx = 1;
+        JTextField countryField = new JTextField(15);
+        dialog.add(countryField, gbc);
+
+        // Capacidad
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        JLabel capacityLabel = new JLabel("Capacidade:");
+        capacityLabel.setForeground(Color.WHITE);
+        dialog.add(capacityLabel, gbc);
+        gbc.gridx = 1;
+        JTextField capacityField = new JTextField(10);
+        dialog.add(capacityField, gbc);
+
+        // Inauguración
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        JLabel yearLabel = new JLabel("Ano Inauguração:");
+        yearLabel.setForeground(Color.WHITE);
+        dialog.add(yearLabel, gbc);
+        gbc.gridx = 1;
+        JTextField yearField = new JTextField(10);
+        dialog.add(yearField, gbc);
+
+        // Partidos
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        JLabel matchesLabel = new JLabel("Partidos:");
+        matchesLabel.setForeground(Color.WHITE);
+        dialog.add(matchesLabel, gbc);
+        gbc.gridx = 1;
+        JTextField matchesField = new JTextField(5);
+        dialog.add(matchesField, gbc);
+
+        // Botones
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.setBackground(new Color(15, 42, 92));
+
+        JButton saveButton = new JButton("Guardar");
+        saveButton.setBackground(new Color(79, 195, 247));
+        saveButton.setForeground(Color.WHITE);
+        saveButton.setFont(new Font("Inter", Font.BOLD, 12));
+        saveButton.addActionListener(e -> {
+            String name = nameField.getText().trim();
+            String city = cityField.getText().trim();
+            String country = countryField.getText().trim();
+            String capacity = capacityField.getText().trim();
+            String year = yearField.getText().trim();
+            String matches = matchesField.getText().trim();
+
+            if (name.isEmpty() || city.isEmpty() || country.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Nombre, Cidade e País são obrigatórios.");
+                return;
+            }
+
+            DefaultTableModel model = (DefaultTableModel) stadiumsTable.getModel();
+            model.addRow(new Object[]{
+                    model.getRowCount() + 1,
+                    name,
+                    city,
+                    country,
+                    capacity.isEmpty() ? "0" : capacity,
+                    year.isEmpty() ? "0" : year,
+                    matches.isEmpty() ? "0" : matches
+            });
+
+            dialog.dispose();
+            JOptionPane.showMessageDialog(rootPanel, "Estádio adicionado com sucesso.");
+        });
+
+        JButton cancelButton = new JButton("Cancelar");
+        cancelButton.setBackground(new Color(200, 70, 70));
+        cancelButton.setForeground(Color.WHITE);
+        cancelButton.setFont(new Font("Inter", Font.BOLD, 12));
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        dialog.add(buttonPanel, gbc);
+
+        dialog.setVisible(true);
     }
 
     private void loadData() {
