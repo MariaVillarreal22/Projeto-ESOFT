@@ -2,34 +2,28 @@ package pt.ipleiria.es.worldcup.ui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import com.intellij.uiDesigner.core.GridConstraints;
-import javax.swing.border.TitledBorder;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
+import java.util.List;
 
 public class StatsScreen {
     private JPanel rootPanel;
     private JPanel Principal;
 
-    // Labels para las estadísticas
     private JLabel totalItemsValue;
     private JLabel totalGoalsValue;
     private JLabel avgGoalsValue;
     private JLabel yellowCardsValue;
     private JLabel redCardsValue;
 
-    // Tablas
     private JTable countryTable;
     private JTable contributionTable;
     private JTable goalsTable;
 
-    // Botón
     private JButton updateButton;
 
     public StatsScreen() {
-        buildUi();
+        $$$setupUI$$$();
+        buildContent();
         loadData();
     }
 
@@ -37,35 +31,46 @@ public class StatsScreen {
         return rootPanel;
     }
 
-    private void buildUi() {
-        rootPanel = new JPanel(new BorderLayout());
+    private void buildContent() {
+        rootPanel.removeAll();
+        rootPanel.setLayout(new BorderLayout());
         rootPanel.setBackground(AppTheme.BACKGROUND);
         rootPanel.setBorder(BorderFactory.createEmptyBorder(10, 22, 20, 22));
 
         // Título
-        JPanel titlePanel = UiSupport.panel(AppTheme.BACKGROUND, 2, 1, new Insets(0, 0, 0, 0), 0, 3);
-        titlePanel.add(UiSupport.label("ESTATÍSTICAS", AppTheme.TEXT, AppTheme.TITLE_FONT), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        titlePanel.add(UiSupport.label("DADOS DO MUNDIAL FIFA 2026", AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1, 0, 3));
+        titlePanel.setBackground(AppTheme.BACKGROUND);
+
+        JLabel titleLabel = new JLabel("ESTATÍSTICAS");
+        titleLabel.setFont(AppTheme.TITLE_FONT);
+        titleLabel.setForeground(AppTheme.TEXT);
+        titlePanel.add(titleLabel);
+
+        JLabel subTitleLabel = new JLabel("DADOS DO MUNDIAL FIFA 2026");
+        subTitleLabel.setFont(AppTheme.BODY_BOLD_FONT);
+        subTitleLabel.setForeground(AppTheme.MUTED);
+        titlePanel.add(subTitleLabel);
+
         rootPanel.add(titlePanel, BorderLayout.NORTH);
 
-        // Panel de contenido principal
-        JPanel contentPanel = UiSupport.panel(AppTheme.BACKGROUND, 3, 1, new Insets(10, 0, 0, 0), 0, 14);
+        // Contenido
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(AppTheme.BACKGROUND);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // 1. Tarjetas de estadísticas (fila 0)
-        contentPanel.add(createStatsCardsPanel(), UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        // 2. Tablas (fila 1)
-        contentPanel.add(createTablesPanel(), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-
-        // 3. Botón ACTUALIZAR (fila 2)
-        contentPanel.add(createButtonPanel(), UiSupport.fixedHeightConstraints(2, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        contentPanel.add(createStatsCardsPanel(), BorderLayout.NORTH);
+        contentPanel.add(createTablesPanel(), BorderLayout.CENTER);
 
         rootPanel.add(contentPanel, BorderLayout.CENTER);
+
+        rootPanel.revalidate();
+        rootPanel.repaint();
     }
 
-    // ==================== TARJETAS DE ESTADÍSTICAS ====================
     private JPanel createStatsCardsPanel() {
-        JPanel panel = UiSupport.panel(AppTheme.BACKGROUND, 1, 5, new Insets(0, 0, 0, 0), 14, 0);
+        JPanel panel = new JPanel(new GridLayout(1, 5, 14, 0));
+        panel.setBackground(AppTheme.BACKGROUND);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 14, 0));
 
         totalItemsValue = new JLabel("0");
         totalGoalsValue = new JLabel("0");
@@ -73,141 +78,49 @@ public class StatsScreen {
         yellowCardsValue = new JLabel("0");
         redCardsValue = new JLabel("0");
 
-        panel.add(createStatCard("TOTAL NUMBER OF ITEMS", totalItemsValue), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createStatCard("TOTAL GOALS SCORED", totalGoalsValue), UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createStatCard("AVERAGE GOALS", avgGoalsValue), UiSupport.constraints(0, 2, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createStatCard("TOTAL YELLOW CARDS", yellowCardsValue), UiSupport.constraints(0, 3, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createStatCard("TOTAL RED CARDS", redCardsValue), UiSupport.constraints(0, 4, 1, 1, GridConstraints.FILL_BOTH));
+        panel.add(createStatCard("TOTAL NUMBER OF ITEMS", totalItemsValue));
+        panel.add(createStatCard("TOTAL GOALS SCORED", totalGoalsValue));
+        panel.add(createStatCard("AVERAGE GOALS", avgGoalsValue));
+        panel.add(createStatCard("TOTAL YELLOW CARDS", yellowCardsValue));
+        panel.add(createStatCard("TOTAL RED CARDS", redCardsValue));
 
         return panel;
     }
 
     private JPanel createStatCard(String title, JLabel valueLabel) {
-        JPanel card = UiSupport.roundedPanel(AppTheme.PANEL_SOFT, 2, 1, new Insets(12, 16, 12, 16), 0, 4, 10);
-        card.setPreferredSize(new Dimension(180, 80));
-        card.setMinimumSize(new Dimension(150, 80));
-        card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 18)));
+        JPanel card = new JPanel(new GridLayout(2, 1, 0, 4));
+        card.setBackground(AppTheme.PANEL_SOFT);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 16), 1),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
 
-        valueLabel.setFont(new Font("Inter", Font.BOLD, 22));
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(AppTheme.BODY_BOLD_FONT);
+        titleLabel.setForeground(AppTheme.MUTED);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(titleLabel);
+
+        valueLabel.setFont(new Font("Inter", Font.BOLD, 20));
         valueLabel.setForeground(AppTheme.TEXT);
-        valueLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        card.add(UiSupport.label(title, AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        card.add(valueLabel, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
+        valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(valueLabel);
 
         return card;
     }
 
-    // ==================== TABLAS ====================
     private JPanel createTablesPanel() {
-        JPanel panel = UiSupport.panel(AppTheme.BACKGROUND, 3, 1, new Insets(0, 0, 0, 0), 0, 14);
+        JPanel panel = new JPanel(new GridLayout(3, 1, 0, 14));
+        panel.setBackground(AppTheme.BACKGROUND);
 
-        panel.add(createCountryTablePanel(), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createContributionTablePanel(), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-        panel.add(createGoalsTablePanel(), UiSupport.constraints(2, 0, 1, 1, GridConstraints.FILL_BOTH));
+        panel.add(createCountryTablePanel());
+        panel.add(createContributionTablePanel());
+        panel.add(createGoalsTablePanel());
 
-        return panel;
-    }
-
-    private JPanel createCountryTablePanel() {
-        JPanel card = UiSupport.roundedPanel(AppTheme.CHIP, 2, 1, new Insets(12, 16, 14, 16), 0, 8, 10);
-        card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-
-        card.add(UiSupport.label("COUNTRY STATISTICS", new Color(0xF8D12F), new Font("Inter", Font.BOLD, 14)),
-                UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        String[] columns = {"#", "Country", "Victories", "Ties", "Defeats", "Goal in Favor", "Goals Against", "Balance", "Points"};
-        Object[][] data = {
-                {"1", "Spain", "4", "1", "0", "21", "9", "+5", "13"},
-                {"2", "Portugal", "3", "2", "1", "19", "10", "+4", "11"},
-                {"3", "France", "2", "3", "0", "20", "12", "+3", "9"}
-        };
-
-        countryTable = new JTable(data, columns);
-        countryTable.setRowHeight(28);
-        countryTable.setFont(new Font("Inter", Font.PLAIN, 12));
-        countryTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
-        countryTable.getTableHeader().setBackground(new Color(0x1A356E));
-        countryTable.getTableHeader().setForeground(AppTheme.TEXT);
-        countryTable.setBackground(AppTheme.CHIP);
-        countryTable.setForeground(AppTheme.TEXT);
-
-        JScrollPane scrollPane = new JScrollPane(countryTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-        scrollPane.getViewport().setBackground(AppTheme.CHIP);
-
-        card.add(scrollPane, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-
-        return card;
-    }
-
-    private JPanel createContributionTablePanel() {
-        JPanel card = UiSupport.roundedPanel(AppTheme.CHIP, 2, 1, new Insets(12, 16, 14, 16), 0, 8, 10);
-        card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-
-        card.add(UiSupport.label("PLAYERS WITH THE GREATEST GOAL CONTRIBUTION", new Color(0xF8D12F), new Font("Inter", Font.BOLD, 14)),
-                UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        String[] columns = {"#", "Player", "Goals"};
-        Object[][] data = {
-                {"1", "VÍTOR MACHADO FERREIRA", "23"},
-                {"2", "PEDRO GONZÁLEZ LÓPEZ", "20"},
-                {"3", "MICHAEL AKPOVI O OLISE", "17"}
-        };
-
-        contributionTable = new JTable(data, columns);
-        contributionTable.setRowHeight(28);
-        contributionTable.setFont(new Font("Inter", Font.PLAIN, 12));
-        contributionTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
-        contributionTable.getTableHeader().setBackground(new Color(0x1A356E));
-        contributionTable.getTableHeader().setForeground(AppTheme.TEXT);
-        contributionTable.setBackground(AppTheme.CHIP);
-        contributionTable.setForeground(AppTheme.TEXT);
-
-        JScrollPane scrollPane = new JScrollPane(contributionTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-        scrollPane.getViewport().setBackground(AppTheme.CHIP);
-
-        card.add(scrollPane, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-
-        return card;
-    }
-
-    private JPanel createGoalsTablePanel() {
-        JPanel card = UiSupport.roundedPanel(AppTheme.CHIP, 2, 1, new Insets(12, 16, 14, 16), 0, 8, 10);
-        card.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-
-        card.add(UiSupport.label("PLAYERS WITH THE MOST GOALS", new Color(0xF8D12F), new Font("Inter", Font.BOLD, 14)),
-                UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-
-        String[] columns = {"#", "Player", "Goals"};
-        Object[][] data = {
-                {"1", "LIONEL ANDRÉS MESSI CUCCITTINI", "17"},
-                {"2", "KILIAN SANMI MBAPPÉ LOTTIN", "17"},
-                {"3", "VÍTOR MACHADO FERREIRA", "12"}
-        };
-
-        goalsTable = new JTable(data, columns);
-        goalsTable.setRowHeight(28);
-        goalsTable.setFont(new Font("Inter", Font.PLAIN, 12));
-        goalsTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
-        goalsTable.getTableHeader().setBackground(new Color(0x1A356E));
-        goalsTable.getTableHeader().setForeground(AppTheme.TEXT);
-        goalsTable.setBackground(AppTheme.CHIP);
-        goalsTable.setForeground(AppTheme.TEXT);
-
-        JScrollPane scrollPane = new JScrollPane(goalsTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
-        scrollPane.getViewport().setBackground(AppTheme.CHIP);
-
-        card.add(scrollPane, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
-
-        return card;
-    }
-
-    // ==================== BOTÓN ACTUALIZAR ====================
-    private JPanel createButtonPanel() {
-        JPanel panel = UiSupport.panel(AppTheme.BACKGROUND, 1, 1, new Insets(0, 0, 0, 0), 0, 0);
+        // Botón ACTUALIZAR
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(AppTheme.BACKGROUND);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         updateButton = new JButton("ACTUALIZAR");
         updateButton.setBackground(AppTheme.ACCENT);
@@ -218,73 +131,225 @@ public class StatsScreen {
         updateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         updateButton.addActionListener(e -> loadData());
 
-        JPanel buttonWrapper = UiSupport.panel(AppTheme.BACKGROUND, 1, 1, new Insets(0, 0, 0, 0), 0, 0);
-        buttonWrapper.add(updateButton, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_NONE));
-        panel.add(buttonWrapper, UiSupport.constraints(0, 0, 1, 1, GridConstraints.ANCHOR_EAST));
+        buttonPanel.add(updateButton);
 
-        return panel;
+        JPanel container = new JPanel(new BorderLayout());
+        container.setBackground(AppTheme.BACKGROUND);
+        container.add(panel, BorderLayout.CENTER);
+        container.add(buttonPanel, BorderLayout.SOUTH);
+
+        return container;
     }
 
-    // ==================== CARGA DE DATOS ====================
-    private void loadData() {
-        // Datos de ejemplo (después se cargarán desde DataManager)
-        totalItemsValue.setText("6");
-        totalGoalsValue.setText("200");
-        avgGoalsValue.setText("3.1");
-        yellowCardsValue.setText("30");
-        redCardsValue.setText("15");
+    private JPanel createCountryTablePanel() {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(AppTheme.CHIP);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 16), 1),
+                BorderFactory.createEmptyBorder(12, 16, 14, 16)
+        ));
 
-        // Recargar tablas con los mismos datos (por ahora)
-        loadCountryTable();
-        loadContributionTable();
-        loadGoalsTable();
-    }
+        JLabel titleLabel = new JLabel("COUNTRY STATISTICS");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(0xF8D12F));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        card.add(titleLabel, BorderLayout.NORTH);
 
-    private void loadCountryTable() {
-        String[] columns = {"#", "Country", "Victories", "Ties", "Defeats", "Goal in Favor", "Goals Against", "Balance", "Points"};
-        Object[][] data = {
-                {"1", "Spain", "4", "1", "0", "21", "9", "+5", "13"},
-                {"2", "Portugal", "3", "2", "1", "19", "10", "+4", "11"},
-                {"3", "France", "2", "3", "0", "20", "12", "+3", "9"}
+        String[] columns = {"#", "Country", "Victories", "Ties", "Defeats",
+                "Goal in Favor", "Goals Against", "Balance", "Points"};
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
-        countryTable.setBackground(new Color(0x0F3D6E));
+
+        countryTable = new JTable(model);
+        countryTable.setRowHeight(28);
+        countryTable.setFont(new Font("Inter", Font.PLAIN, 12));
+        countryTable.setBackground(AppTheme.CHIP);
         countryTable.setForeground(AppTheme.TEXT);
         countryTable.setGridColor(new Color(0x1A356E));
         countryTable.setShowGrid(true);
-        countryTable.setRowHeight(28);
+
+        countryTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
+        countryTable.getTableHeader().setBackground(new Color(0x2E7D32));
+        countryTable.getTableHeader().setForeground(Color.WHITE);
+        countryTable.getTableHeader().setReorderingAllowed(false);
+
+        JScrollPane scrollPane = new JScrollPane(countryTable);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
+        scrollPane.getViewport().setBackground(AppTheme.CHIP);
+
+        card.add(scrollPane, BorderLayout.CENTER);
+        return card;
     }
 
-    private void loadContributionTable() {
+    private JPanel createContributionTablePanel() {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(AppTheme.CHIP);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 16), 1),
+                BorderFactory.createEmptyBorder(12, 16, 14, 16)
+        ));
+
+        JLabel titleLabel = new JLabel("PLAYERS WITH THE GREATEST GOAL CONTRIBUTION");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(0xF8D12F));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        card.add(titleLabel, BorderLayout.NORTH);
+
         String[] columns = {"#", "Player", "Goals"};
-        Object[][] data = {
-                {"1", "VÍTOR MACHADO FERREIRA", "23"},
-                {"2", "PEDRO GONZÁLEZ LÓPEZ", "20"},
-                {"3", "MICHAEL AKPOVI O OLISE", "17"}
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
-        contributionTable.setBackground(new Color(0x0F3D6E));
+
+        contributionTable = new JTable(model);
+        contributionTable.setRowHeight(28);
+        contributionTable.setFont(new Font("Inter", Font.PLAIN, 12));
+        contributionTable.setBackground(AppTheme.CHIP);
         contributionTable.setForeground(AppTheme.TEXT);
         contributionTable.setGridColor(new Color(0x1A356E));
         contributionTable.setShowGrid(true);
-        contributionTable.setRowHeight(28);
+
+        contributionTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
+        contributionTable.getTableHeader().setBackground(new Color(0x2E7D32));
+        contributionTable.getTableHeader().setForeground(Color.WHITE);
+        contributionTable.getTableHeader().setReorderingAllowed(false);
+
+        JScrollPane scrollPane = new JScrollPane(contributionTable);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
+        scrollPane.getViewport().setBackground(AppTheme.CHIP);
+
+        card.add(scrollPane, BorderLayout.CENTER);
+        return card;
     }
 
-    private void loadGoalsTable() {
+    private JPanel createGoalsTablePanel() {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(AppTheme.CHIP);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 16), 1),
+                BorderFactory.createEmptyBorder(12, 16, 14, 16)
+        ));
+
+        JLabel titleLabel = new JLabel("PLAYERS WITH THE MOST GOALS");
+        titleLabel.setFont(new Font("Inter", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(0xF8D12F));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        card.add(titleLabel, BorderLayout.NORTH);
+
         String[] columns = {"#", "Player", "Goals"};
-        Object[][] data = {
-                {"1", "LIONEL ANDRÉS MESSI CUCCITTINI", "17"},
-                {"2", "KILIAN SANMI MBAPPÉ LOTTIN", "17"},
-                {"3", "VÍTOR MACHADO FERREIRA", "12"}
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
-        goalsTable.setBackground(new Color(0x0F3D6E));
+
+        goalsTable = new JTable(model);
+        goalsTable.setRowHeight(28);
+        goalsTable.setFont(new Font("Inter", Font.PLAIN, 12));
+        goalsTable.setBackground(AppTheme.CHIP);
         goalsTable.setForeground(AppTheme.TEXT);
         goalsTable.setGridColor(new Color(0x1A356E));
         goalsTable.setShowGrid(true);
-        goalsTable.setRowHeight(28);
+
+        goalsTable.getTableHeader().setFont(new Font("Inter", Font.BOLD, 11));
+        goalsTable.getTableHeader().setBackground(new Color(0x2E7D32));
+        goalsTable.getTableHeader().setForeground(Color.WHITE);
+        goalsTable.getTableHeader().setReorderingAllowed(false);
+
+        JScrollPane scrollPane = new JScrollPane(goalsTable);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 16)));
+        scrollPane.getViewport().setBackground(AppTheme.CHIP);
+
+        card.add(scrollPane, BorderLayout.CENTER);
+        return card;
     }
 
-    {
+    private void loadData() {
+        DataManager data = DataManager.getInstance();
+        List<Team> teams = data.getTeams();
+        List<Player> players = data.getAllPlayers();
 
-        $$$setupUI$$$();
+        // Actualizar estadísticas
+        totalItemsValue.setText(String.valueOf(teams.size()));
+        totalGoalsValue.setText(String.valueOf(data.getTotalGoals()));
+        avgGoalsValue.setText(String.format("%.1f", data.getAverageGoals()));
+        yellowCardsValue.setText(String.valueOf(data.getTotalYellowCards()));
+        redCardsValue.setText(String.valueOf(data.getTotalRedCards()));
+
+        // Actualizar tablas
+        updateCountryTable(teams);
+        updateContributionTable(players);
+        updateGoalsTable(players);
+    }
+
+    private void updateCountryTable(List<Team> teams) {
+        DefaultTableModel model = (DefaultTableModel) countryTable.getModel();
+        model.setRowCount(0);
+
+        teams.sort((t1, t2) -> Integer.compare(t2.getPoints(), t1.getPoints()));
+
+        int index = 1;
+        for (Team team : teams) {
+            model.addRow(new Object[]{
+                    index++,
+                    team.getName(),
+                    team.getVictories(),
+                    team.getTies(),
+                    team.getDefeats(),
+                    team.getGoalsFor(),
+                    team.getGoalsAgainst(),
+                    team.getBalance(),
+                    team.getPoints()
+            });
+        }
+    }
+
+    private void updateContributionTable(List<Player> players) {
+        DefaultTableModel model = (DefaultTableModel) contributionTable.getModel();
+        model.setRowCount(0);
+
+        players.sort((p1, p2) -> Integer.compare(p2.getGoals(), p1.getGoals()));
+
+        int limit = Math.min(10, players.size());
+        for (int i = 0; i < limit; i++) {
+            Player p = players.get(i);
+            model.addRow(new Object[]{
+                    i + 1,
+                    p.getName(),
+                    p.getGoals()
+            });
+        }
+    }
+
+    private void updateGoalsTable(List<Player> players) {
+        DefaultTableModel model = (DefaultTableModel) goalsTable.getModel();
+        model.setRowCount(0);
+
+        players.sort((p1, p2) -> Integer.compare(p2.getGoals(), p1.getGoals()));
+
+        int limit = Math.min(10, players.size());
+        for (int i = 0; i < limit; i++) {
+            Player p = players.get(i);
+            model.addRow(new Object[]{
+                    i + 1,
+                    p.getName(),
+                    p.getGoals()
+            });
+        }
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 
     /**
@@ -299,22 +364,10 @@ public class StatsScreen {
         rootPanel.setLayout(new BorderLayout(0, 0));
         rootPanel.setBackground(new Color(-15783332));
         rootPanel.setPreferredSize(new Dimension(1100, 750));
-        rootPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(10, 22, 20, 22), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         Principal = new JPanel();
-        Principal.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
+        Principal.setLayout(new BorderLayout(0, 0));
+        Principal.setBackground(new Color(-15783332));
         rootPanel.add(Principal, BorderLayout.CENTER);
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.setBackground(new Color(-15783332));
-        Principal.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel2.setBackground(new Color(-15783332));
-        Principal.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel3.setBackground(new Color(-15783332));
-        Principal.add(panel3, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
     }
 
     /**
