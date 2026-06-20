@@ -43,6 +43,7 @@ public class MainScreen extends JPanel {
     private View currentView = View.HOME;
     private WorldCupTeam selectedTeam = WorldCupData.defaultTeam();
     private final Timer refreshTimer;
+    private boolean sidebarVisible;
 
     public MainScreen() {
         buildUi();
@@ -63,7 +64,7 @@ public class MainScreen extends JPanel {
         fasesButton.addActionListener(event -> show(View.FASES));
         calendarButton.addActionListener(event -> show(View.CALENDAR));
         standingsButton.addActionListener(event -> show(View.STANDINGS));
-        menuButton.addActionListener(event -> show(View.HOME));
+        menuButton.addActionListener(event -> toggleSidebar());
         teamComboBox.addActionListener(event -> {
             Object item = teamComboBox.getSelectedItem();
             if (item instanceof WorldCupTeam team && !team.equals(selectedTeam)) {
@@ -75,7 +76,26 @@ public class MainScreen extends JPanel {
 
     private void show(View view) {
         currentView = view;
+        setSidebarVisible(false);
         renderCurrentView();
+    }
+
+    private void toggleSidebar() {
+        setSidebarVisible(!sidebarVisible);
+    }
+
+    private void setSidebarVisible(boolean visible) {
+        if (sidebarVisible == visible) {
+            return;
+        }
+        sidebarVisible = visible;
+        if (visible) {
+            rootPanel.add(sidebarPanel, BorderLayout.WEST);
+        } else {
+            rootPanel.remove(sidebarPanel);
+        }
+        rootPanel.revalidate();
+        rootPanel.repaint();
     }
 
     private void renderCurrentView() {
@@ -132,7 +152,9 @@ public class MainScreen extends JPanel {
     }
 
     private void buildUi() {
-        rootPanel = UiSupport.panel(AppTheme.BACKGROUND, 1, 2, new Insets(0, 0, 0, 0), 0, 0);
+        rootPanel = new JPanel(new BorderLayout());
+        rootPanel.setOpaque(true);
+        rootPanel.setBackground(AppTheme.BACKGROUND);
         sidebarPanel = UiSupport.panel(AppTheme.SIDEBAR, 11, 1, new Insets(18, 18, 18, 18), 0, 10);
         sidebarPanel.setPreferredSize(new Dimension(276, 720));
         JButton brand = navButton("FIFA\u00B0");
@@ -151,7 +173,6 @@ public class MainScreen extends JPanel {
         addSidebarSection(sidebarPanel, 5, "ENTIDADES", navButton("Equipas"), navButton("Arbitros"), navButton("Estadios"));
         addSidebarSection(sidebarPanel, 7, "BILHETES", navButton("Comprar"), navButton("Tickets purchased"));
         addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", navButton("Hoteis"), navButton("Locacoes"));
-        rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
 
         mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(true);
@@ -205,7 +226,7 @@ public class MainScreen extends JPanel {
         contentPanel.setOpaque(true);
         contentPanel.setBackground(AppTheme.BACKGROUND);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
-        rootPanel.add(mainPanel, UiSupport.constraints(0, 1, 1, 1, GridConstraints.FILL_BOTH));
+        rootPanel.add(mainPanel, BorderLayout.CENTER);
     }
 
     private enum View {
