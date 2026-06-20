@@ -22,7 +22,8 @@ import java.util.List;
 
 final class FasesPanel {
     private JPanel rootPanel;
-    private BracketPanel bracketPanel;
+    private JPanel bracketPanel;
+    private BracketPanel bracketCanvas;
 
     FasesPanel(WorldCupTeam selectedTeam) {
         buildUi(selectedTeam);
@@ -43,8 +44,8 @@ final class FasesPanel {
         };
         for (int i = 0; i < rounds.length; i++) {
             List<JPanel> matchBoxes = new ArrayList<>();
-            bracketPanel.addRound(matchBoxes);
-            bracketPanel.add(roundColumn(rounds[i], matchBoxes), UiSupport.constraints(0, i, 1, 1, GridConstraints.FILL_BOTH));
+            bracketCanvas.addRound(matchBoxes);
+            bracketCanvas.add(roundColumn(rounds[i], matchBoxes), UiSupport.constraints(0, i, 1, 1, GridConstraints.FILL_BOTH));
         }
     }
 
@@ -80,7 +81,8 @@ final class FasesPanel {
         titlePanel.add(UiSupport.label("SELECAO: " + selectedTeam.name().toUpperCase(), AppTheme.MUTED, AppTheme.BODY_BOLD_FONT), UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         titlePanel.add(UiSupport.label("FASES", AppTheme.TEXT, AppTheme.TITLE_FONT), UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
         rootPanel.add(titlePanel, UiSupport.fixedHeightConstraints(0, 0, 1, 1, GridConstraints.FILL_HORIZONTAL));
-        bracketPanel = new BracketPanel();
+        bracketCanvas = new BracketPanel();
+        bracketPanel = bracketCanvas;
         rootPanel.add(bracketPanel, UiSupport.constraints(1, 0, 1, 1, GridConstraints.FILL_BOTH));
     }
 
