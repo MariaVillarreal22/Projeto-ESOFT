@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="pt.ipleiria.es.worldcup.ui.TeamsScreen">
+  <grid id="27dc6" binding="rootPanel2" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <background color="-15783332"/>
+      <preferredSize width="1100" height="750"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <grid id="3229a" binding="principaltabla" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="Center"/>
+        <properties>
+          <background color="-15783332"/>
+        </properties>
+        <border type="empty"/>
+        <children/>
+      </grid>
+    </children>
+  </grid>
+</form>

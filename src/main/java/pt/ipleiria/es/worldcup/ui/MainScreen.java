@@ -35,6 +35,9 @@ public class MainScreen extends JPanel {
     private JButton standingsButton;
     private JButton statisticsButton;
     private JButton menuButton;
+    private JButton equipasButton;
+    private JButton arbitrosButton;
+    private JButton estadiosButton;
     private JTextField searchField;
     private JComboBox<WorldCupTeam> teamComboBox;
     private JLabel dateLabel;
@@ -62,7 +65,11 @@ public class MainScreen extends JPanel {
         fasesButton.addActionListener(event -> show(View.FASES));
         calendarButton.addActionListener(event -> show(View.CALENDAR));
         standingsButton.addActionListener(event -> show(View.STANDINGS));
+        statisticsButton.addActionListener(event -> show(View.STATISTICS));
+        equipasButton.addActionListener(event -> show(View.TEAMS));
         menuButton.addActionListener(event -> show(View.HOME));
+        arbitrosButton.addActionListener(event -> show(View.REFEREES));
+        estadiosButton.addActionListener(event -> show(View.STADIUMS));
         teamComboBox.addActionListener(event -> {
             Object item = teamComboBox.getSelectedItem();
             if (item instanceof WorldCupTeam team && !team.equals(selectedTeam)) {
@@ -84,6 +91,11 @@ public class MainScreen extends JPanel {
             case FASES -> new FasesPanel(selectedTeam).getRootPanel();
             case CALENDAR -> new CalendarPanel().getRootPanel();
             case STANDINGS -> new StandingsPanel(selectedTeam).getRootPanel();
+            case STATISTICS -> new StatsScreen().getRootPanel();
+            case TEAMS -> new TeamsScreen().getRootPanel();
+            case REFEREES -> new RefereesScreen().getRootPanel();
+            case STADIUMS -> new StadiumsScreen().getRootPanel();
+
         };
         contentPanel.add(viewPanel, BorderLayout.CENTER);
         updateActiveButtons();
@@ -145,11 +157,12 @@ public class MainScreen extends JPanel {
         calendarButton = navButton("Calendario");
         standingsButton = navButton("Classificacoes");
         statisticsButton = navButton("Estatisticas");
+        equipasButton = navButton("Equipas");
+        arbitrosButton = navButton("Arbitros");
+        estadiosButton = navButton("Estadios");
         addSidebarSection(sidebarPanel, 1, "GERAL", homeButton);
         addSidebarSection(sidebarPanel, 3, "COMPETICOES", fasesButton, calendarButton, standingsButton, statisticsButton);
-        addSidebarSection(sidebarPanel, 5, "ENTIDADES", navButton("Equipas"), navButton("Arbitros"), navButton("Estadios"));
-        addSidebarSection(sidebarPanel, 7, "BILHETES", navButton("Comprar"), navButton("Tickets purchased"));
-        addSidebarSection(sidebarPanel, 9, "HOSPITALIDADE", navButton("Hoteis"), navButton("Locacoes"));
+        addSidebarSection(sidebarPanel, 5, "ENTIDADES", equipasButton, arbitrosButton, estadiosButton);
         rootPanel.add(sidebarPanel, UiSupport.constraints(0, 0, 1, 1, GridConstraints.FILL_VERTICAL));
 
         mainPanel = new JPanel(new BorderLayout());
@@ -211,7 +224,13 @@ public class MainScreen extends JPanel {
         HOME,
         FASES,
         CALENDAR,
-        STANDINGS
+        STANDINGS,
+        ///Omar
+        STATISTICS,
+        TEAMS,
+        REFEREES,
+        STADIUMS
+        //
     }
 
     private static final class TeamRenderer extends DefaultListCellRenderer {
